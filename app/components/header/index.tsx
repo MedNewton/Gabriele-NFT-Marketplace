@@ -6,6 +6,7 @@ import useDarkModeCheck from "@/hooks/useDarkModeCheck";
 import { usePathname } from "next/navigation";
 import useStickyMenu from "@/hooks/useStickyMenu";
 import AdminBar from "./AdminBar";
+import ConnectWalletButton from "./connectButton";
 import Image from "next/image";
 
 export default function Header(): JSX.Element {
@@ -44,36 +45,51 @@ export default function Header(): JSX.Element {
           <div className="row">
             <div className="col-md-12">
               <div id="site-header-inner">
-                <div className="wrap-box flex">
+                {/* Make this the flex container */}
+                <div className="wrap-box d-flex align-items-center w-100">
+                  {/* Left: logo */}
                   <div id="site-logo" className="clearfix">
                     <div id="site-logo-inner">
-                      <Link href="/" rel="home" className="main-logo">
-                        <p className="text-2xl font-bold"></p>
+                      <Link href="/" rel="home" className="main-logo text-decoration-none">
+                        {/* if you're not using Tailwind, replace classes with Bootstrap: fs-3 fw-bold */}
+                        <Image
+                          id="logo_header"
+                          src={`/assets/images/logo/${isDark ? "logo_dark" : "logo"}.png`}
+                          alt="nft-gaming"
+                          width={133}
+                          height={56}
+                        />
                       </Link>
                     </div>
                   </div>
 
+                  {/* Mobile menu button */}
                   <div
                     data-bs-toggle="offcanvas"
                     data-bs-target="#menu"
                     aria-controls="menu"
-                    className="mobile-button "
+                    className="mobile-button ms-3"
+                    role="button"
                   >
                     <span />
                   </div>
 
-                  <Navigation />
+                  {/* Navigation (sits in the middle) */}
+                  <div className="ms-4">
+                    <Navigation />
+                  </div>
 
-                  {/* RIGHT END GROUP: Wallet + Mode (+ AdminBar if you like here) */}
-                    
-                    <Mode />
-                    <AdminBar />
+                  {/* RIGHT END GROUP — push to the end with ms-auto */}
+                  <div className="ms-auto d-flex align-items-center me-3">
+                    {showWallet && <ConnectWalletButton />}
+                  </div>
                 </div>
+                {/* /wrap-box */}
               </div>
             </div>
           </div>
         </div>
-        {/* Removed the separate <Mode /> here */}
+        <Mode />
       </header>
     </>
   );

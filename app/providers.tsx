@@ -1,6 +1,9 @@
 "use client";
 import { ThemeProvider } from "next-themes";
 import { MetaMaskProvider } from "metamask-react";
+import { ThirdwebProvider } from "thirdweb/react";
+import client from "./thirdwebClient";
+import { ThirdwebClient } from "thirdweb";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
@@ -9,7 +12,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             enableSystem={false}
             themes={["is_dark", "is_light"]}
         >
-            <MetaMaskProvider>{children}</MetaMaskProvider>
+            <MetaMaskProvider>
+                <ThirdwebProvider>
+                    {children}
+                </ThirdwebProvider>
+            </MetaMaskProvider>
         </ThemeProvider>
     );
 }

@@ -3848,3 +3848,18 @@ a {
 .is_dark .ui-404__content button:hover {
     color: #14141f;
 }
+
+.is-dark-connect-button {
+    background-color: #14141f !important;
+    color: #fff !important;
+}
+
+.is-light-connect-button {
+    background-color: #fff !important;
+    color: #14141f !important;
+}
+
+
+
+
+

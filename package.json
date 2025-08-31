@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.7",
+    "@tanstack/react-query": "^5.85.6",
     "@types/bootstrap": "^5.2.6",
     "@types/node": "20.2.1",
     "@types/react": "^18.2.6",
     "@types/react-dom": "18.2.4",
     "@types/swiper": "^6.0.0",
+    "@web3auth/modal": "^10.3.0",
     "bootstrap": "^5.2.3",
     "eslint": "8.40.0",
     "eslint-config-next": "^14.1.0",
@@ -29,7 +31,9 @@
     "react-pro-sidebar": "^1.1.0-alpha.1",
     "react-slider": "^2.0.5",
     "swiper": "^9.3.2",
+    "thirdweb": "^5.105.39",
     "typescript": "5.0.4",
+    "wagmi": "^2.16.9",
     "zustand": "^4.3.8"
   },
   "devDependencies": {

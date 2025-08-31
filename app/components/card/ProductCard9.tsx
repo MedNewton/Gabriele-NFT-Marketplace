@@ -1,26 +1,8 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import Countdown from "react-countdown";
 
 export default function ProductCard9({ data }: any): JSX.Element {
-    const renderer = ({
-        days,
-        hours,
-        minutes,
-        seconds,
-        completed,
-    }: any): JSX.Element | string => {
-        if (completed) {
-            return "Completed";
-        } else {
-            return (
-                <span>
-                    {days} : {hours} : {minutes} : {seconds}
-                </span>
-            );
-        }
-    };
     return (
         <>
             <div className="sc-card-product">
@@ -33,21 +15,6 @@ export default function ProductCard9({ data }: any): JSX.Element {
                             alt="Image"
                         />
                     </Link>
-                    <button className="wishlist-button heart">
-                        <span className="number-like"> {data.hert}</span>
-                    </button>
-                    <div className="featured-countdown">
-                        <span className="slogan" />
-                        <span>
-                            <Countdown
-                                date={
-                                    Date.now() +
-                                    1000 * 60 * 60 * 24 * data.auction
-                                }
-                                renderer={renderer}
-                            />
-                        </span>
-                    </div>
                 </div>
                 <div className="card-title">
                     <h5>
@@ -74,22 +41,6 @@ export default function ProductCard9({ data }: any): JSX.Element {
                             </h6>
                         </div>
                     </div>
-                    <div className="price">
-                        <span>Current Bid</span>
-                        <h5> {data.eth} ETH</h5>
-                    </div>
-                </div>
-                <div className="card-bottom">
-                    <a
-                        data-bs-toggle="modal"
-                        data-bs-target="#popup_bid"
-                        className="sc-button style bag fl-button pri-3"
-                    >
-                        <span>Place Bid</span>
-                    </a>
-                    <Link href="/activity-1" className="view-history reload">
-                        View History
-                    </Link>
                 </div>
             </div>
         </>
