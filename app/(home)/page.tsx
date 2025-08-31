@@ -8,7 +8,7 @@ import LiveAuctionModal from "../components/modal/LiveAuctionModal";
 import TodaysPicks from "../components/block/TodaysPicks";
 
 export const metadata: Metadata = {
-    title: "Axies | NFT Marketplace React/Next Js Template | Home 1",
+    title: "Gabriele | NFT Marketplace | Home 1",
 };
 
 export default function page(): JSX.Element {
