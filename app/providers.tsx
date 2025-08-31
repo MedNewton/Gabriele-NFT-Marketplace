@@ -2,8 +2,7 @@
 import { ThemeProvider } from "next-themes";
 import { MetaMaskProvider } from "metamask-react";
 import { ThirdwebProvider } from "thirdweb/react";
-import client from "./thirdwebClient";
-import { ThirdwebClient } from "thirdweb";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
@@ -14,7 +13,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         >
             <MetaMaskProvider>
                 <ThirdwebProvider>
-                    {children}
+                    <ConvexClientProvider>
+                        {children}
+                    </ConvexClientProvider>
                 </ThirdwebProvider>
             </MetaMaskProvider>
         </ThemeProvider>
