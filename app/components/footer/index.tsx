@@ -23,7 +23,7 @@ export default function Footer() {
                       id="logo_footer"
                       // src="/assets/images/logo/logo_dark.png"
                       src={`/assets/images/logo/${
-                        isDark ? "logo_dark" : "logo2"
+                        isDark ? "gabriele-logo" : "gabriele-logo-dark"
                       }.png`}
                       alt="nft-gaming"
                       width={135}
