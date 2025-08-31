@@ -18,6 +18,7 @@
     "@types/swiper": "^6.0.0",
     "@web3auth/modal": "^10.3.0",
     "bootstrap": "^5.2.3",
+    "convex": "^1.26.2",
     "eslint": "8.40.0",
     "eslint-config-next": "^14.1.0",
     "metamask-react": "^2.6.0",
