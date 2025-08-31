@@ -54,7 +54,7 @@ export default function Header(): JSX.Element {
                         {/* if you're not using Tailwind, replace classes with Bootstrap: fs-3 fw-bold */}
                         <Image
                           id="logo_header"
-                          src={`/assets/images/logo/${isDark ? "logo_dark" : "logo"}.png`}
+                          src={`/assets/images/logo/gabriele-logo.png`}
                           alt="nft-gaming"
                           width={133}
                           height={56}
@@ -82,6 +82,7 @@ export default function Header(): JSX.Element {
                   {/* RIGHT END GROUP — push to the end with ms-auto */}
                   <div className="ms-auto d-flex align-items-center me-3">
                     {showWallet && <ConnectWalletButton />}
+                    <AdminBar />
                   </div>
                 </div>
                 {/* /wrap-box */}
