@@ -1,6 +1,5 @@
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import useDarkModeCheck from "@/hooks/useDarkModeCheck";
@@ -18,13 +17,10 @@ export default function HeroSlider1(): JSX.Element {
                     <Swiper
                         slidesPerView={1}
                         loop={true}
-                        navigation={{
-                            prevEl: ".swiper-button-next",
-                            nextEl: ".swiper-button-prev",
-                        }}
-                        modules={[Navigation]}
+                        noSwiping
+                        navigation={false}
                         className="mySwiper"
-                  
+                        
                     >
                         <SwiperSlide>
                             <div className="swiper-slide">
@@ -33,7 +29,7 @@ export default function HeroSlider1(): JSX.Element {
                                         <div className="wrap-heading flat-slider flex">
                                             <div className="content">
                                                 <h2 className="heading">
-                                                    Discover, find,
+                                                    Create, Discover,
                                                 </h2>
                                                 <h1 className="heading mb-style">
                                                     <span
@@ -43,26 +39,24 @@ export default function HeroSlider1(): JSX.Element {
                                                                 : "style"
                                                         }`}
                                                     >
-                                                        Sell extraordinary
+                                                        Buy &Sell
                                                     </span>
                                                 </h1>
                                                 <h1 className="heading">
-                                                    Monster NFTs
+                                                    Extraordinary NFTs
                                                 </h1>
                                                 <p className="sub-heading mg-t-29 mg-bt-44">
-                                                    Marketplace for monster
-                                                    character cllections non
-                                                    fungible token NFTs
+                                                    Marketplace for creating, discovering, buying and selling NFTs
                                                 </p>
                                                 <div className="flat-bt-slider flex style2">
                                                     <Link
-                                                        href="/explore-1"
+                                                        href="/explore"
                                                         className="sc-button header-slider style style-1 rocket fl-button pri-1"
                                                     >
                                                         <span>Explore</span>
                                                     </Link>
                                                     <Link
-                                                        href="/create-item"
+                                                        href="/create-nft"
                                                         className="sc-button header-slider style style-1 note fl-button pri-1"
                                                     >
                                                         <span>Create</span>
@@ -80,7 +74,7 @@ export default function HeroSlider1(): JSX.Element {
                                                 <Image
                                                     height={588}
                                                     width={354}
-                                                    src="/assets/images/box-item/imgslider2.png"
+                                                    src="/assets/images/slider/imgslider2.webp"
                                                     alt="Image"
                                                 />
                                             </div>

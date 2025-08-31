@@ -1928,6 +1928,7 @@
 
 .swiper-button-prev,
 .swiper-button-next {
+    display: none !important;
     opacity: 0;
     -webkit-transition: all 0.3s ease;
     -o-transition: all 0.3s ease;
