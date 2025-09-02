@@ -21,7 +21,8 @@ export const create = mutation({
     name: v.string(),
     symbol: v.string(),
     description: v.string(),
-    imageId: v.optional(v.id("_storage")), // <-- store uploaded file ref
+    imageId: v.optional(v.id("_storage")),
+    creator: v.string()
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("collections", {
@@ -29,6 +30,7 @@ export const create = mutation({
       symbol: args.symbol,
       description: args.description,
       imageId: args.imageId ?? null,
+      creator: args.creator,
     });
   },
 });
@@ -47,6 +49,7 @@ export const update = mutation({
     symbol: v.string(),
     description: v.string(),
     imageId: v.optional(v.id("_storage")),
+    creator: v.string()
   },
   handler: async (ctx, args) => {
     return await ctx.db.patch(args.id, {
@@ -54,6 +57,7 @@ export const update = mutation({
       symbol: args.symbol,
       description: args.description,
       imageId: args.imageId ?? null,
+      creator: args.creator,
     });
   },
 });

@@ -73,6 +73,7 @@ export default function CreateCollection(): JSX.Element {
         symbol: collectionData.symbol,
         description: collectionData.description,
         imageId,
+        creator: account?.address ?? ""
       });
 
       setCollectionData({ image: null, name: "", symbol: "", description: "" });
@@ -157,7 +158,7 @@ export default function CreateCollection(): JSX.Element {
               <div className="form-create-item">
                 <form action="#" onSubmit={(e) => e.preventDefault()}>
                   <h4 className="title-create-item">
-                    Upload file <small>(collection avatar image) {account?.address}</small>
+                    Upload file <small>(collection avatar image)</small>
                   </h4>
 
                   <label className="uploadFile">
