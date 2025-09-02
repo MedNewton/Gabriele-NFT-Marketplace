@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel"; // <-- import the branded Id type
+import type { Id } from "@/convex/_generated/dataModel";
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
+import { ClipLoader } from "react-spinners";
+import { FaRegCircleCheck } from "react-icons/fa6";
 
 export default function CreateCollection(): JSX.Element {
+  const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
+  const walletConnected = connectionStatus === "connected" && !!account;
+
   const [collectionData, setCollectionData] = useState<{
     image: File | null;
     name: string;
@@ -21,6 +29,20 @@ export default function CreateCollection(): JSX.Element {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Toast state
+  const [toast, setToast] = useState<{ show: boolean; kind: "success" | "error"; text: string }>({
+    show: false,
+    kind: "success",
+    text: "",
+  });
+
+  // Auto-hide toast after 4s
+  useEffect(() => {
+    if (!toast.show) return;
+    const t = setTimeout(() => setToast((s) => ({ ...s, show: false })), 4000);
+    return () => clearTimeout(t);
+  }, [toast.show]);
+
   const createCollection = useMutation(api.collections.create);
   const generateUploadUrl = useMutation(api.collections.generateUploadUrl);
 
@@ -33,11 +55,10 @@ export default function CreateCollection(): JSX.Element {
     setError(null);
     setSubmitting(true);
     try {
-      let imageId: Id<"_storage"> | undefined; // <-- correctly typed
+      let imageId: Id<"_storage"> | undefined;
 
       if (collectionData.image) {
         const uploadUrl = await generateUploadUrl();
-
         const res = await fetch(uploadUrl, {
           method: "POST",
           headers: { "Content-Type": collectionData.image.type },
@@ -45,7 +66,6 @@ export default function CreateCollection(): JSX.Element {
         });
         if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 
-        // JSON is plain strings, so cast to the branded Id type:
         const json: { storageId: string } = await res.json();
         imageId = json.storageId as Id<"_storage">;
       }
@@ -58,109 +78,171 @@ export default function CreateCollection(): JSX.Element {
       });
 
       setCollectionData({ image: null, name: "", symbol: "", description: "" });
+
+      // Success toast
+      setToast({
+        show: true,
+        kind: "success",
+        text: "Collection created successfully",
+      });
     } catch (e: any) {
-      setError(e?.message ?? "Failed to create collection.");
+      const msg = e?.message ?? "Failed to create collection.";
+      setError(msg);
+      setToast({ show: true, kind: "error", text: msg });
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <div className="tf-create-item tf-section">
-      <div className="ibthemes-container">
-        <div className="row">
-          <div className="col-xl-12 col-lg-12 col-md-12 col-12">
-            <div className="form-create-item">
-              <form action="#" onSubmit={(e) => e.preventDefault()}>
-                <h4 className="title-create-item">
-                  Upload file <small>(collection avatar image)</small>
-                </h4>
+  if (walletLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <ClipLoader color="#000" size={50} />
+      </div>
+    );
+  }
 
-                <label className="uploadFile">
-                  <span className="filename">
-                    {collectionData.image
-                      ? collectionData.image.name
-                      : "PNG, JPG, GIF, WEBP or MP4. Max 200mb."}
-                  </span>
-                  <input
-                    type="file"
-                    className="inputfile form-control"
-                    name="file"
-                    onChange={uploadHandler}
-                    accept="image/*,video/mp4"
-                  />
-                </label>
-
-                <div className="flat-tabs tab-create-item">
-                  <div className="content-tab">
-                    <div className="content-inner">
-                      <h4 className="title-create-item">Name</h4>
-                      <input
-                        type="text"
-                        placeholder="Enter collection name"
-                        value={collectionData.name}
-                        onChange={(e) =>
-                          setCollectionData({ ...collectionData, name: e.target.value })
-                        }
-                      />
-
-                      <h4 className="title-create-item mt-5">Symbol</h4>
-                      <input
-                        type="text"
-                        placeholder="Enter symbol"
-                        value={collectionData.symbol}
-                        onChange={(e) =>
-                          setCollectionData({ ...collectionData, symbol: e.target.value })
-                        }
-                      />
-
-                      <h4 className="title-create-item mt-5">Description</h4>
-                      <textarea
-                        placeholder='e.g. “This is the best collection in the world”'
-                        value={collectionData.description}
-                        onChange={(e) =>
-                          setCollectionData({
-                            ...collectionData,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-
-                      {error && <p style={{ color: "red", marginTop: 8 }}>{error}</p>}
-
-                      <button
-                        type="button"
-                        className="sc-button loadmore style fl-button pri-3 mt-4"
-                        onClick={onCreate}
-                        disabled={
-                          submitting || !collectionData.name || !collectionData.symbol
-                        }
-                        aria-busy={submitting}
-                      >
-                        {submitting ? "Creating Collection..." : "Create Collection"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-
-              {/* Optional image preview for images only */}
-              {/* {collectionData.image?.type.startsWith("image/") && (
-                <div style={{ marginTop: 16 }}>
-                  <strong>Preview:</strong>
-                  <div style={{ marginTop: 8 }}>
-                    <img
-                      src={URL.createObjectURL(collectionData.image)}
-                      alt="preview"
-                      style={{ maxWidth: 200, height: "auto", display: "block" }}
-                    />
-                  </div>
-                </div>
-              )} */}
+  if (!walletConnected) {
+    return (
+      <div className="tf-connect-wallet tf-section">
+        <div className="ibthemes-container">
+          <div className="row">
+            <div className="col-12">
+              <h2 className="tf-title-heading ct style-2 mg-bt-12">Connect Your Wallet</h2>
+              <h5 className="sub-title ct style-1 pad-400">
+                To create a collection, you need to connect your wallet.
+              </h5>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Toast container (Bootstrap 5) */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="position-fixed top-0 end-0 p-3"
+        style={{ zIndex: 1080 }}
+      >
+        <div
+          className={`toast ${toast.show ? "show" : "hide"} border-0`}
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style={{
+            minWidth: 280,
+            borderRadius: "0.75rem", // <- rounded toast
+            overflow: "hidden",
+          }}
+        >
+          <div
+            className={`toast-body d-flex align-items-center ${
+              toast.kind === "success" ? "bg-success" : "bg-danger"
+            } text-white`}
+            style={{
+              borderRadius: "0.75rem", // <- rounded body
+            }}
+          >
+            <FaRegCircleCheck className="me-2 flex-shrink-0" size={22} />
+            <span className="me-auto fs-5" style={{ fontWeight: 500 }}>
+              {toast.text}
+            </span>
+            <button
+              type="button"
+              className="btn-close btn-close-white ms-3"
+              aria-label="Close"
+              onClick={() => setToast((s) => ({ ...s, show: false }))}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="tf-create-item tf-section">
+        <div className="ibthemes-container">
+          <div className="row">
+            <div className="col-xl-12 col-lg-12 col-md-12 col-12">
+              <div className="form-create-item">
+                <form action="#" onSubmit={(e) => e.preventDefault()}>
+                  <h4 className="title-create-item">
+                    Upload file <small>(collection avatar image)</small>
+                  </h4>
+
+                  <label className="uploadFile">
+                    <span className="filename">
+                      {collectionData.image
+                        ? collectionData.image.name
+                        : "PNG, JPG, GIF, WEBP or MP4. Max 200mb."}
+                    </span>
+                    <input
+                      type="file"
+                      className="inputfile form-control"
+                      name="file"
+                      onChange={uploadHandler}
+                      accept="image/*,video/mp4"
+                    />
+                  </label>
+
+                  <div className="flat-tabs tab-create-item">
+                    <div className="content-tab">
+                      <div className="content-inner">
+                        <h4 className="title-create-item">Name</h4>
+                        <input
+                          type="text"
+                          placeholder="Enter collection name"
+                          value={collectionData.name}
+                          onChange={(e) =>
+                            setCollectionData({ ...collectionData, name: e.target.value })
+                          }
+                        />
+
+                        <h4 className="title-create-item mt-5">Symbol</h4>
+                        <input
+                          type="text"
+                          placeholder="Enter symbol"
+                          value={collectionData.symbol}
+                          onChange={(e) =>
+                            setCollectionData({ ...collectionData, symbol: e.target.value })
+                          }
+                        />
+
+                        <h4 className="title-create-item mt-5">Description</h4>
+                        <textarea
+                          placeholder='e.g. “This is the best collection in the world”'
+                          value={collectionData.description}
+                          onChange={(e) =>
+                            setCollectionData({
+                              ...collectionData,
+                              description: e.target.value,
+                            })
+                          }
+                        />
+
+                        {error && <p style={{ color: "red", marginTop: 8 }}>{error}</p>}
+
+                        <button
+                          type="button"
+                          className="sc-button loadmore style fl-button pri-3 mt-4"
+                          onClick={onCreate}
+                          disabled={submitting || !collectionData.name || !collectionData.symbol}
+                          aria-busy={submitting}
+                        >
+                          {submitting ? "Creating Collection..." : "Create Collection"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+
+                {/* Optional image preview... */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
