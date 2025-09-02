@@ -42,20 +42,22 @@ export default function CollectionCard1({ data }: Props): JSX.Element {
                             </div>
                             <div className="content">
                                 <h4>
-                                    <Link href="authors-1">
+                                    <Link href="#">
                                         {data.name}
                                     </Link>
                                 </h4>
                                 <div className="infor">
                                     <span>Created by</span>
                                     <span className="name">
-                                        <Link href="authors-2">
-                                            {data.author.name}
-                                        </Link>
+                                        {data.author.name}
                                     </span>
                                 </div>
+
                             </div>
                         </div>
+                    </div>
+                    <div className="description mt-3">
+                        <p>{data.description.length > 100 ? data.description.slice(0, 100) + "..." : data.description}</p>
                     </div>
                 </div>
             </div>

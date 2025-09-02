@@ -46,8 +46,8 @@ export default function MyCollections(): JSX.Element {
                     <div className="row">
                         <div className="col-md-12">
                             <div className="heading-live-auctions">
-                                <h2 className="tf-title pb-17 text-left">
-                                    My Collections
+                                <h2 className="tf-title pb-17 text-left text-white hidden-title">
+                                    &nbsp;
                                 </h2>
                                 <Link href="/create-collection" className="exp style2">
                                     Create a new collection

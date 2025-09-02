@@ -3863,7 +3863,12 @@ a {
     color: #4b50e6 !important;
   }
   
-
+.hidden-title{
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    cursor: none;
+}
 
 
 
