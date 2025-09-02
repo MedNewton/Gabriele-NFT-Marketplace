@@ -9,6 +9,20 @@ export const get = query({
   },
 });
 
+export const getByCreator = query({
+  args: { creator: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("collections").filter((q) => q.eq(q.field("creator"), args.creator)).collect();
+  },
+});
+
+export const getUrl = query({
+  args: { imageId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.imageId);
+  },
+});
+
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {

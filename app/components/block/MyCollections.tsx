@@ -6,7 +6,39 @@ import "swiper/css/pagination";
 import { product2 } from "@/data/product";
 import Link from "next/link";
 import CollectionCard1 from "../card/CollectionCard1";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
+
 export default function MyCollections(): JSX.Element {
+    const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
+  const walletConnected = connectionStatus === "connected" && !!account;
+    const collections = useQuery(api.collections.get);
+    const myCollections = collections?.filter((collection) => collection.creator === account?.address);
+    
+    const creator = useQuery(api.users.getByWalletAddress, {
+        walletAddress: account?.address ?? ""
+    });
+
+    if (!walletConnected) {
+        return (
+          <div className="tf-connect-wallet tf-section">
+            <div className="ibthemes-container">
+              <div className="row">
+                <div className="col-12">
+                  <h2 className="tf-title-heading ct style-2 mg-bt-12">Connect Your Wallet</h2>
+                  <h5 className="sub-title ct style-1 pad-400">
+                    To create a collection, you need to connect your wallet.
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
     return (
         <>
             <section className="tf-section live-auctions style4 no-pt-mb mobie-style">
@@ -42,9 +74,18 @@ export default function MyCollections(): JSX.Element {
                                             },
                                         }}
                                     >
-                                        {product2.map((item) => (
+                                        {myCollections?.map((item) => (
                                             <SwiperSlide key={item.id}>
-                                                <CollectionCard1 data={item} />
+                                                <CollectionCard1 data={{
+                                                    id: item.id,
+                                                    name: item.name,
+                                                    symbol: item.symbol,
+                                                    imageId: item.imageId,
+                                                    description: item.description,
+                                                    author: {
+                                                        name: creator?.name ?? ""
+                                                    }
+                                                }} />
                                             </SwiperSlide>
                                         ))}
                                     </Swiper>
