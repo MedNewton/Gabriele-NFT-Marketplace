@@ -68,7 +68,7 @@ export const ensureByWallet = mutation({
       name: "New User",
       dob: "",
       preferences: [{ theme: "dark" }],
-      pp: "kg2aa4fb0n0kb2zzed3tb5ynr17pv3aq"
+      pp: "kg2ayx7p6hcr21w7zt52y5h4c17ptrp5"
     });
 
     const user = await ctx.db.get(id);
