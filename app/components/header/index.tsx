@@ -8,19 +8,23 @@ import useStickyMenu from "@/hooks/useStickyMenu";
 import AdminBar from "./AdminBar";
 import ConnectWalletButton from "./connectButton";
 import Image from "next/image";
-
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
+import ProfileNavItem from "./ProfileNavItem";
+import ProfileDropdownIcon from "./ProfileDropdownIcon";
+import ProfileNavigation from "./ProfileNaviagtion";
 export default function Header(): JSX.Element {
   const path = usePathname();
   const isDark = useDarkModeCheck();
   const isSticky1 = useStickyMenu(200);
   const isSticky2 = useStickyMenu(250);
 
-  const showWallet = ![
-    "/authors-1",
-    "/authors-2",
-    "/create-item",
-    "/edit-profile",
-  ].includes(path || "");
+  // thirdweb connection
+  const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const walletConnected = connectionStatus === "connected" && !!account;
+
+  // pages where wallet button is hidden (keep your logic)
+
 
   return (
     <>
@@ -45,13 +49,11 @@ export default function Header(): JSX.Element {
           <div className="row">
             <div className="col-md-12">
               <div id="site-header-inner">
-                {/* Make this the flex container */}
                 <div className="wrap-box d-flex align-items-center w-100">
                   {/* Left: logo */}
                   <div id="site-logo" className="clearfix">
                     <div id="site-logo-inner">
                       <Link href="/" rel="home" className="main-logo text-decoration-none">
-                        {/* if you're not using Tailwind, replace classes with Bootstrap: fs-3 fw-bold */}
                         <Image
                           id="logo_header"
                           src={`/assets/images/logo/gabriele-logo.png`}
@@ -74,18 +76,18 @@ export default function Header(): JSX.Element {
                     <span />
                   </div>
 
-                  {/* Navigation (sits in the middle) */}
+                  {/* Navigation */}
                   <div className="ms-4">
                     <Navigation />
                   </div>
 
-                  {/* RIGHT END GROUP — push to the end with ms-auto */}
+                  {/* Right group */}
                   <div className="ms-auto d-flex align-items-center me-3">
-                    {showWallet && <ConnectWalletButton />}
-                    <AdminBar />
+                    {/* If you want to hide the button when connected, change to: showWallet && !walletConnected */}
+                    {<ConnectWalletButton />}
+                    {walletConnected && <AdminBar />}
                   </div>
                 </div>
-                {/* /wrap-box */}
               </div>
             </div>
           </div>

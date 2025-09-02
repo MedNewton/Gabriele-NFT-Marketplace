@@ -8,6 +8,22 @@ export const get = query({
   },
 });
 
+export const getByWalletAddress = query({
+  args: {
+    walletAddress: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("users").filter((q) => q.eq(q.field("wallet"), args.walletAddress)).first();
+  },
+});
+
+export const getUrl = query({
+  args: { id: v.id("_storage") },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.id);
+  },
+});
+
 export const create = mutation({
   args: {
     name: v.string(),

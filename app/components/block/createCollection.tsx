@@ -5,7 +5,6 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
-import { ClipLoader } from "react-spinners";
 import { FaRegCircleCheck } from "react-icons/fa6";
 
 export default function CreateCollection(): JSX.Element {
@@ -94,14 +93,6 @@ export default function CreateCollection(): JSX.Element {
     }
   };
 
-  if (walletLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <ClipLoader color="#000" size={50} />
-      </div>
-    );
-  }
-
   if (!walletConnected) {
     return (
       <div className="tf-connect-wallet tf-section">
@@ -168,7 +159,7 @@ export default function CreateCollection(): JSX.Element {
               <div className="form-create-item">
                 <form action="#" onSubmit={(e) => e.preventDefault()}>
                   <h4 className="title-create-item">
-                    Upload file <small>(collection avatar image)</small>
+                    Upload file <small>(collection avatar image) {account?.address}</small>
                   </h4>
 
                   <label className="uploadFile">

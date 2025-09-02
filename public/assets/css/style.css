@@ -1555,7 +1555,7 @@ header {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    cursor: pointer;
+    cursor: auto !important;
     -webkit-transition: all 0.2s ease-in-out;
     -o-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
@@ -3859,6 +3859,10 @@ a {
     color: #14141f !important;
 }
 
+.copy-icon:hover {
+    color: #4b50e6 !important;
+  }
+  
 
 
 

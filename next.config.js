@@ -4,6 +4,18 @@ const nextConfig = {
     //     appDir: true,
     // },
     // styledComponents: true,
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "tremendous-basilisk-700.convex.cloud",
+            },
+            {
+                protocol: "https",
+                hostname: "colorless-porcupine-722.convex.cloud",
+            },
+        ],
+    },
 };
 
 module.exports = nextConfig;
