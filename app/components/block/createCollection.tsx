@@ -5,7 +5,6 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
-import { FaRegCircleCheck } from "react-icons/fa6";
 
 export default function CreateCollection(): JSX.Element {
   const account = useActiveAccount();
@@ -138,7 +137,6 @@ export default function CreateCollection(): JSX.Element {
               borderRadius: "0.75rem", // <- rounded body
             }}
           >
-            <FaRegCircleCheck className="me-2 flex-shrink-0" size={22} />
             <span className="me-auto fs-5" style={{ fontWeight: 500 }}>
               {toast.text}
             </span>

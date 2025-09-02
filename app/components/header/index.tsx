@@ -1,3 +1,4 @@
+// Header.tsx
 "use client";
 import Link from "next/link";
 import Navigation from "./Navigation";
@@ -8,23 +9,39 @@ import useStickyMenu from "@/hooks/useStickyMenu";
 import AdminBar from "./AdminBar";
 import ConnectWalletButton from "./connectButton";
 import Image from "next/image";
-import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
-import ProfileNavItem from "./ProfileNavItem";
-import ProfileDropdownIcon from "./ProfileDropdownIcon";
-import ProfileNavigation from "./ProfileNaviagtion";
+import { useActiveAccount } from "thirdweb/react";
+import { useEffect, useRef } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
 export default function Header(): JSX.Element {
   const path = usePathname();
   const isDark = useDarkModeCheck();
   const isSticky1 = useStickyMenu(200);
   const isSticky2 = useStickyMenu(250);
 
-  // thirdweb connection
   const account = useActiveAccount();
-  const connectionStatus = useActiveWalletConnectionStatus();
-  const walletConnected = connectionStatus === "connected" && !!account;
+  const ensureUser = useMutation(api.users.ensureByWallet);
 
-  // pages where wallet button is hidden (keep your logic)
+  // prevent duplicate calls (StrictMode)
+  const ensuredFor = useRef<string | null>(null);
 
+  useEffect(() => {
+    const addr = account?.address;
+    if (!addr) return;
+
+    // skip if we already ensured for this address
+    if (ensuredFor.current === addr) return;
+
+    ensureUser({ walletAddress: addr })
+      .catch((err) => {
+        // optional: log or toast
+        console.error("ensureUser failed:", err);
+      })
+      .finally(() => {
+        ensuredFor.current = addr;
+      });
+  }, [account?.address, ensureUser]);
 
   return (
     <>
@@ -50,7 +67,6 @@ export default function Header(): JSX.Element {
             <div className="col-md-12">
               <div id="site-header-inner">
                 <div className="wrap-box d-flex align-items-center w-100">
-                  {/* Left: logo */}
                   <div id="site-logo" className="clearfix">
                     <div id="site-logo-inner">
                       <Link href="/" rel="home" className="main-logo text-decoration-none">
@@ -65,7 +81,6 @@ export default function Header(): JSX.Element {
                     </div>
                   </div>
 
-                  {/* Mobile menu button */}
                   <div
                     data-bs-toggle="offcanvas"
                     data-bs-target="#menu"
@@ -76,16 +91,13 @@ export default function Header(): JSX.Element {
                     <span />
                   </div>
 
-                  {/* Navigation */}
                   <div className="ms-4">
                     <Navigation />
                   </div>
 
-                  {/* Right group */}
                   <div className="ms-auto d-flex align-items-center me-3">
-                    {/* If you want to hide the button when connected, change to: showWallet && !walletConnected */}
-                    {<ConnectWalletButton />}
-                    {walletConnected && <AdminBar />}
+                    <ConnectWalletButton />
+                    {account && <AdminBar />}
                   </div>
                 </div>
               </div>
