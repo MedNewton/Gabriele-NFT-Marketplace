@@ -11,11 +11,30 @@ export const get = query({
 export const getByWalletAddress = query({
   args: { walletAddress: v.string() },
   handler: async (ctx, { walletAddress }) => {
-    return ctx
+    // Guard: empty/whitespace → no-op
+    const addr = walletAddress.trim();
+    if (!addr) return null;
+
+    // 1) Try exact match (works if you stored the original casing)
+    const exact = await ctx
       .db
       .query("users")
-      .filter((q) => q.eq(q.field("wallet"), walletAddress))
+      .filter((q) => q.eq(q.field("wallet"), addr))
       .first();
+    if (exact) return exact;
+
+    // 2) Try lowercase match (helps if you store normalized lowercase in DB)
+    const lower = addr.toLowerCase();
+    if (lower !== addr) {
+      const lowerHit = await ctx
+        .db
+        .query("users")
+        .filter((q) => q.eq(q.field("wallet"), lower))
+        .first();
+      if (lowerHit) return lowerHit;
+    }
+
+    return null;
   },
 });
 
@@ -23,22 +42,33 @@ export const getByWalletAddress = query({
 export const ensureByWallet = mutation({
   args: { walletAddress: v.string() },
   handler: async (ctx, { walletAddress }) => {
-    const existing = await ctx
-      .db
+    // Normalize the input
+    const raw = walletAddress.trim();
+    if (!raw) return { id: null, created: false, user: null };
+
+    const lower = raw.toLowerCase();
+
+    // Try exact (covers any old rows saved with original casing)
+    const exact = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("wallet"), walletAddress))
+      .filter((q) => q.eq(q.field("wallet"), raw))
       .first();
+    if (exact) return { id: exact._id, created: false, user: exact };
 
-    if (existing) {
-      return { id: existing._id, created: false, user: existing };
-    }
+    // Try lowercase (recommended normalized storage)
+    const byLower = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("wallet"), lower))
+      .first();
+    if (byLower) return { id: byLower._id, created: false, user: byLower };
 
+    // Create a new user (omit `pp` unless you have a real storage Id)
     const id = await ctx.db.insert("users", {
-      wallet: walletAddress,
+      wallet: lower,
       name: "New User",
-      dob: "", // adjust default if you prefer
-      pp: "kg21jbv9f8fkwrw2h0883wqyfx7ptmfv",
+      dob: "",
       preferences: [{ theme: "dark" }],
+      // pp: <Id<"_storage">>  // include only if you actually have one
     });
 
     const user = await ctx.db.get(id);
