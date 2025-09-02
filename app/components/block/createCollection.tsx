@@ -54,7 +54,7 @@ export default function CreateCollection(): JSX.Element {
         name: collectionData.name,
         symbol: collectionData.symbol,
         description: collectionData.description,
-        imageId, // <-- now matches Id<"_storage"> | undefined
+        imageId,
       });
 
       setCollectionData({ image: null, name: "", symbol: "", description: "" });
@@ -104,7 +104,7 @@ export default function CreateCollection(): JSX.Element {
                         }
                       />
 
-                      <h4 className="title-create-item mn-3">Symbol</h4>
+                      <h4 className="title-create-item mt-5">Symbol</h4>
                       <input
                         type="text"
                         placeholder="Enter symbol"
@@ -114,7 +114,7 @@ export default function CreateCollection(): JSX.Element {
                         }
                       />
 
-                      <h4 className="title-create-item">Description</h4>
+                      <h4 className="title-create-item mt-5">Description</h4>
                       <textarea
                         placeholder='e.g. “This is the best collection in the world”'
                         value={collectionData.description}
@@ -130,7 +130,7 @@ export default function CreateCollection(): JSX.Element {
 
                       <button
                         type="button"
-                        className="sc-button loadmore style fl-button pri-3"
+                        className="sc-button loadmore style fl-button pri-3 mt-4"
                         onClick={onCreate}
                         disabled={
                           submitting || !collectionData.name || !collectionData.symbol
