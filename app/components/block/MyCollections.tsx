@@ -12,32 +12,33 @@ import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/reac
 
 export default function MyCollections(): JSX.Element {
     const account = useActiveAccount();
-  const connectionStatus = useActiveWalletConnectionStatus();
-  const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
-  const walletConnected = connectionStatus === "connected" && !!account;
-    const collections = useQuery(api.collections.get);
-    const myCollections = collections?.filter((collection) => collection.creator === account?.address);
-    
+    const connectionStatus = useActiveWalletConnectionStatus();
+    const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
+    const walletConnected = connectionStatus === "connected" && !!account;
+    const myCollections = useQuery(api.collections.getByCreator, {
+        creator: account?.address ?? ""
+    });
+
     const creator = useQuery(api.users.getByWalletAddress, {
         walletAddress: account?.address ?? ""
     });
 
     if (!walletConnected) {
         return (
-          <div className="tf-connect-wallet tf-section">
-            <div className="ibthemes-container">
-              <div className="row">
-                <div className="col-12">
-                  <h2 className="tf-title-heading ct style-2 mg-bt-12">Connect Your Wallet</h2>
-                  <h5 className="sub-title ct style-1 pad-400">
-                    To create a collection, you need to connect your wallet.
-                  </h5>
+            <div className="tf-connect-wallet tf-section">
+                <div className="ibthemes-container">
+                    <div className="row">
+                        <div className="col-12">
+                            <h2 className="tf-title-heading ct style-2 mg-bt-12">Connect Your Wallet</h2>
+                            <h5 className="sub-title ct style-1 pad-400">
+                                To create a collection, you need to connect your wallet.
+                            </h5>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
         );
-      }
+    }
 
     return (
         <>
@@ -75,9 +76,9 @@ export default function MyCollections(): JSX.Element {
                                         }}
                                     >
                                         {myCollections?.map((item) => (
-                                            <SwiperSlide key={item.id}>
+                                            <SwiperSlide key={item._id}>
                                                 <CollectionCard1 data={{
-                                                    id: item.id,
+                                                    _id: item._id,
                                                     name: item.name,
                                                     symbol: item.symbol,
                                                     imageId: item.imageId,

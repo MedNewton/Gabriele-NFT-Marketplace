@@ -12,9 +12,14 @@ export const get = query({
 export const getByCreator = query({
   args: { creator: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.query("collections").filter((q) => q.eq(q.field("creator"), args.creator)).collect();
+    const collections = await ctx.db.query("collections").filter((q) => q.eq(q.field("creator"), args.creator)).collect();
+    return collections.map((collection) => ({
+      ...collection,
+      _id: collection._id, // Ensure the _id field is included
+    }));
   },
 });
+
 
 export const getUrl = query({
   args: { imageId: v.id("_storage") },
