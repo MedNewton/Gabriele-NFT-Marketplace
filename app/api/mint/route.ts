@@ -1,4 +1,3 @@
-// app/api/mint/route.ts
 import { mintNFT, isValidAddress, isValidTokenURI } from "@/utils/mint";
 import { NextResponse } from "next/server";
 

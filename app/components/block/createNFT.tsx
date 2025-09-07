@@ -15,7 +15,6 @@ interface Collection {
   imageUrl?: string;
 }
 
-// (Optional) type for API response
 type MintApiResponse = {
   success: boolean;
   transactionHash?: string;
@@ -104,11 +103,9 @@ export default function CreateNFT(): JSX.Element {
     setMintError("");
 
     try {
-      // 1) Upload image
       const imageUris = await upload({ client, files: [getImage] });
       const imageIpfsUri = imageUris[0];
 
-      // 2) Build metadata
       const metadata = {
         name: title,
         description: description,
@@ -122,16 +119,12 @@ export default function CreateNFT(): JSX.Element {
 
       setMintStatus("Uploading metadata to IPFS...");
 
-      // 3) Upload metadata JSON
       const metadataUris = await upload({
         client,
         files: [new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" })],
       });
-      alert(metadataUris);
-      const metadataIpfsUri = metadataUris[0];
 
-      // 4) Call your server API to mint (🔥 uses your private key server-side)
-      setMintStatus("Minting NFT on-chain (server)…"); // CHANGED
+      setMintStatus("Minting NFT on-chain…");
       const res = await fetch("/api/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -152,10 +145,9 @@ export default function CreateNFT(): JSX.Element {
 
       setMintStatus(
         `NFT minted successfully! Token ID: ${data.tokenId ?? "?"} — Tx: ${data.transactionHash}`
-      ); // CHANGED
+      );
       setCreating(false);
 
-      // Reset form
       setImage(null);
       setTitle("");
       setDescription("");
@@ -167,14 +159,6 @@ export default function CreateNFT(): JSX.Element {
       setCreating(false);
       setMintStatus("");
     }
-  };
-
-  // Helper: unique id (kept in case you want it later)
-  const generateUID = (): `0x${string}` => {
-    const randomBytes = new Uint8Array(32);
-    crypto.getRandomValues(randomBytes);
-    const hex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, "0")).join("");
-    return `0x${hex}`;
   };
 
   if (!walletConnected) {

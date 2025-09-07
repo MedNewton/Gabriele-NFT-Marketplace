@@ -1,4 +1,3 @@
-// utils/mint.ts
 import {
     createPublicClient,
     createWalletClient,
@@ -44,7 +43,6 @@ import {
   
     const account = privateKeyToAccount(privateKey);
   
-    // Pin generics so types stay consistent (Base L2 includes 'deposit' txs)
     const transport = http(rpc, { batch: false }) as Transport;
   
     const publicClient = createPublicClient({
@@ -84,14 +82,12 @@ import {
         args: [recipientAddress, tokenURI],
       });
   
-      // Estimate gas (avoid hardcoding)
       const gas = await publicClient.estimateGas({
         account: account.address,
         to: contractAddress,
         data,
       });
-  
-      // Let viem pick EIP-1559 fees; you can add explicit fees if you prefer
+
       const hash = await walletClient.sendTransaction({
         to: contractAddress,
         data,
@@ -103,7 +99,6 @@ import {
         confirmations: 2,
       });
   
-      // Parse Transfer events to get tokenId (safer than manual topic reads)
       const transfers = parseEventLogs({
         abi: nftAbi,
         logs: receipt.logs,
