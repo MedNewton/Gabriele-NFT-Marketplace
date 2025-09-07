@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 export async function GET() {
     return NextResponse.json({
         status: 'ready',
-        network: 'Base Mainnet',
-        contract: '0x08d2A45C296dBdcAaC48FC98B50CC5bAc9D504d2',
+        network: 'Base Sepolia',
+        contract: '0x2Fcb8200b5B20F2eC53c80D95941eC7aE8145d26',
     });
 }
