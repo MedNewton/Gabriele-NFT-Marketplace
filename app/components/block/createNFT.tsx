@@ -139,8 +139,6 @@ export default function CreateNFT(): JSX.Element {
         transaction,
         account: account
       });
-
-      console.log("Transaction hash:", transactionHash);
       
       setMintStatus(`NFT minted successfully! Transaction hash: ${transactionHash}`);
       setCreating(false);
