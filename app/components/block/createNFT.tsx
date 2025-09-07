@@ -60,7 +60,7 @@ export default function CreateNFT(): JSX.Element {
             urls[collection._id] = url || "/assets/images/box-item/card-item8.jpg";
           } catch (error) {
             console.error("Failed to fetch image URL:", error);
-            urls[collection._id] = "/default-image.jpg";
+            urls[collection._id] = "/assets/images/box-item/card-item8.jpg";
           }
         }
         setImageUrls(urls);
@@ -127,6 +127,7 @@ export default function CreateNFT(): JSX.Element {
         client,
         files: [new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" })],
       });
+      alert(metadataUris);
       const metadataIpfsUri = metadataUris[0];
 
       // 4) Call your server API to mint (🔥 uses your private key server-side)
@@ -134,14 +135,17 @@ export default function CreateNFT(): JSX.Element {
       const res = await fetch("/api/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipientAddress: account.address,
-          tokenURI: metadataIpfsUri,
-        }),
+        body: JSON.stringify({ recipientAddress: account.address, tokenURI: metadataUris }),
       });
-
-      const data: MintApiResponse = await res.json();
-
+      
+      const raw = await res.text();
+      let data: MintApiResponse;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(`Non-JSON response from server: ${raw.slice(0, 200)}`);
+      }
+      
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Minting failed");
       }
@@ -158,6 +162,8 @@ export default function CreateNFT(): JSX.Element {
       setSelectedCollection(null);
     } catch (error: any) {
       setMintError(`Error: ${error.message ?? String(error)}`);
+      alert(error.message ?? String(error));
+      console.error("Error:", error);
       setCreating(false);
       setMintStatus("");
     }

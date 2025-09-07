@@ -80,7 +80,7 @@ export default function Dropdown2({
                                     }}
                                 >
                                     <Image
-                                        src={item.imageUrl ?? "/default-image.jpg"}
+                                        src={item.imageUrl ?? "/assets/images/box-item/card-item8.jpg"}
                                         alt={item.name}
                                         width={24}
                                         height={24}
