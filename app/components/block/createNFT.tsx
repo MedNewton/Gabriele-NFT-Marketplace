@@ -112,10 +112,11 @@ export default function CreateNFT(): JSX.Element {
 
     try {
       // Upload image to IPFS
-      const imageIpfsUri = await upload({
+      const imageUris = await upload({
         client,
         files: [getImage],
       });
+      const imageIpfsUri = imageUris[0]; // Get the first URI from the array
 
       // Create metadata JSON
       const metadata = {
@@ -125,7 +126,7 @@ export default function CreateNFT(): JSX.Element {
         attributes: [
           {
             trait_type: "Collection",
-            value: selectedCollection?.name || "Uncategorized"
+            value: selectedCollection?._id || "Uncategorized"
           },
           {
             trait_type: "Creator",
@@ -138,17 +139,20 @@ export default function CreateNFT(): JSX.Element {
         }
       };
 
-      console.log("Metadata:", metadata);
-
       setMintStatus("Uploading metadata to IPFS...");
       
-      // Upload metadata to IPFS
-      const metadataIpfsUri = await upload({
+      // Upload metadata to IPFS as JSON
+      const metadataUris = await upload({
         client,
-        files: [metadata],
+        files: [
+          new File(
+            [JSON.stringify(metadata)], 
+            "metadata.json", 
+            { type: "application/json" }
+          )
+        ],
       });
-
-      console.log("Metadata IPFS URI:", metadataIpfsUri);
+      const metadataIpfsUri = metadataUris[0]; // Get the first URI from the array
 
       setMintStatus("Minting NFT...");
 
@@ -162,7 +166,7 @@ export default function CreateNFT(): JSX.Element {
       const transaction = prepareContractCall({
         contract: contract,
         method: "function mintTo(address to, string memory uri) public",
-        params: [account.address, metadataIpfsUri]
+        params: [account.address, metadataIpfsUri] // Use metadata URI instead of image URI
       });
       
       // Send the transaction
