@@ -2,7 +2,7 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useQuery, useConvex } from "convex/react";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
-import { prepareContractCall, sendTransaction, getContract } from "thirdweb";
+import { prepareContractCall, sendTransaction, getContract, toUnits } from "thirdweb";
 import { upload } from "thirdweb/storage";
 import client from "@/app/thirdwebClient";
 import { baseSepolia } from "thirdweb/chains";
@@ -16,6 +16,24 @@ interface Collection {
   _id: string;
   imageUrl?: string;
 }
+
+// You'll need to create an API route to generate signatures
+// This is a placeholder function - you'll need to implement the actual API call
+const generateMintSignature = async (mintRequest: any) => {
+  const response = await fetch('/api/generate-mint-signature', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(mintRequest),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to generate mint signature');
+  }
+  
+  return response.json();
+};
 
 export default function CreateNFT(): JSX.Element {
   const [getImage, setImage] = useState<null | File>(null);
@@ -116,7 +134,7 @@ export default function CreateNFT(): JSX.Element {
         client,
         files: [getImage],
       });
-      const imageIpfsUri = imageUris[0]; // Get the first URI from the array
+      const imageIpfsUri = imageUris[0];
 
       // Create metadata JSON
       const metadata = {
@@ -126,7 +144,7 @@ export default function CreateNFT(): JSX.Element {
         attributes: [
           {
             trait_type: "Collection",
-            value: selectedCollection?._id || "Uncategorized"
+            value: selectedCollection?.name || "Uncategorized"
           },
           {
             trait_type: "Creator",
@@ -152,10 +170,28 @@ export default function CreateNFT(): JSX.Element {
           )
         ],
       });
-      const metadataIpfsUri = metadataUris[0]; // Get the first URI from the array
-      alert(metadataUris);
+      const metadataIpfsUri = metadataUris[0];
 
-      setMintStatus("Minting NFT...");
+      setMintStatus("Generating mint signature...");
+      
+      // Prepare mint request
+      const mintRequest = {
+        to: account.address,
+        royaltyRecipient: account.address, // or your royalty address
+        royaltyBps: BigInt(500), // 5% royalty
+        primarySaleRecipient: account.address,
+        uri: metadataIpfsUri,
+        price: BigInt(0), // Free mint
+        currency: "0x0000000000000000000000000000000000000000", // Native token
+        validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
+        validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 3600), // 1 hour validity
+        uid: generateUID() as `0x${string}`, // Generate a unique ID
+      };
+
+      // Get signature from your backend
+      const { signature } = await generateMintSignature(mintRequest);
+
+      setMintStatus("Minting NFT with signature...");
 
       const contract = getContract({
         client: client,
@@ -163,11 +199,12 @@ export default function CreateNFT(): JSX.Element {
         address: process.env.NEXT_PUBLIC_COLLECTION_SMART_CONTRACT_ADDRESS!,
       });
       
-      // Prepare the contract call using the new ThirdWeb SDK
+      // Use the mintWithSignature function
       const transaction = prepareContractCall({
         contract: contract,
-        method: "function mintTo(address to, string memory uri) public",
-        params: [account.address, metadataUris.toString()] // Use metadata URI instead of image URI
+        method: "function mintWithSignature((address to, address royaltyRecipient, uint256 royaltyBps, address primarySaleRecipient, string uri, uint256 price, address currency, uint128 validityStartTimestamp, uint128 validityEndTimestamp, bytes32 uid), bytes signature) public payable",
+        params: [mintRequest, signature],
+        value: BigInt(0) // No payment required
       });
       
       // Send the transaction
@@ -190,6 +227,13 @@ export default function CreateNFT(): JSX.Element {
       setCreating(false);
       setMintStatus("");
     }
+  };
+
+  // Helper function to generate a unique ID
+  const generateUID = () => {
+    return `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')}`;
   };
 
   if (!walletConnected) {
