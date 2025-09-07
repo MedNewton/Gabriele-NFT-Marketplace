@@ -6,15 +6,15 @@ import { useState } from "react";
 interface Props {
     data: {
         id: number;
-        status: string;
-        hert: number;
+        status?: string;
+        hert?: number;
         img: string;
-        title: string;
-        tag: string;
-        eth: number;
-        author: {
-            name: string;
-            avatar: string;
+        title?: string;
+        tag?: string;
+        eth?: number;
+        author?: {
+            name?: string;
+            avatar?: string;
         };
     };
 }
@@ -42,26 +42,11 @@ export default function ProductCard3({ data }: Props): JSX.Element {
                             alt="Image"
                         />
                     </Link>
-                    {data.status === "Coming Soon" ? (
-                        <div className="coming-soon">coming soon</div>
-                    ) : undefined}
-
-                    <button
-                        onClick={heartToggle}
-                        className={`wishlist-button heart ${
-                            isHeartToggle === 1 ? "active" : ""
-                        } `}
-                    >
-                        <span className="number-like">
-                            {data.hert + isHeartToggle}
-                        </span>
-                    </button>
                 </div>
                 <div className="card-title">
                     <h5 className="style2">
                         <Link href="/item-details-1">{data.title}</Link>
                     </h5>
-                    <div className="tags">{data.tag}</div>
                 </div>
                 <div className="meta-info">
                     <div className="author">
@@ -69,42 +54,39 @@ export default function ProductCard3({ data }: Props): JSX.Element {
                             <Image
                                 height={100}
                                 width={100}
-                                src={data.author.avatar}
+                                src={data.author?.avatar || ""}
                                 alt="Image"
                             />
                         </div>
                         <div className="info">
-                            <span>Owned By</span>
+                            <span>Collection</span>
                             <h6>
                                 <Link href="/authors-2">
-                                    {data.author.name}
+                                    {data.author?.name || ""}
                                 </Link>
                             </h6>
                         </div>
                     </div>
                     <div className="price">
-                        <span>Current Bid</span>
-                        <h5> {data.eth} ETH</h5>
+                        <span>Price</span>
+                        <h5> {data.eth || 0} ETH</h5>
                     </div>
                 </div>
-                {data.status !== "Coming Soon" ? (
-                    <div className="card-bottom">
-                        <a
-                            href="#"
-                            data-bs-toggle="modal"
-                            data-bs-target="#popup_bid"
-                            className="sc-button style bag fl-button pri-3"
-                        >
-                            <span>Place Bid</span>
-                        </a>
-                        <Link
-                            href="/activity-1"
-                            className="view-history reload"
-                        >
-                            View History
-                        </Link>
-                    </div>
-                ) : undefined}
+                <div className="card-bottom" style={{
+                    width: "100% !important",
+                }}>
+                    <a
+                        href="#"
+                        data-bs-toggle="modal"
+                        data-bs-target="#popup_bid"
+                        className="sc-button style bag fl-button pri-3"
+                        style={{
+                            width: "100% !important",
+                        }}
+                    >
+                        <span>Buy Now</span>
+                    </a>
+                </div>
             </div>
         </>
     );

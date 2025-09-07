@@ -111,12 +111,11 @@ export default function CreateNFT(): JSX.Element {
 
     try {
       const imageUris = await upload({ client, files: [getImage] });
-      const imageIpfsUri = imageUris[0];
 
       const metadata = {
         name: title,
         description: description,
-        image: imageIpfsUri,
+        image: imageUris,
         attributes: [
           { trait_type: "Collection", value: selectedCollection?.name || "Uncategorized" },
           { trait_type: "Creator", value: account.address }

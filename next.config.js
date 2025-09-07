@@ -14,6 +14,11 @@ const nextConfig = {
                 protocol: "https",
                 hostname: "colorless-porcupine-722.convex.cloud",
             },
+            {
+                protocol: "https",
+                hostname: "ipfs.io",
+                pathname: "/ipfs/**",
+            },
         ],
     },
 };
