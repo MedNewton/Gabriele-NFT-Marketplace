@@ -1,8 +1,10 @@
 "use client";
 import { useState, ChangeEvent, useEffect } from "react";
 import { useQuery, useConvex } from "convex/react";
-import { useContract, useMintNFT } from "@thirdweb-dev/react";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
+import { prepareContractCall, sendTransaction, toUnits, getContract } from "thirdweb";
+import client from "@/app/thirdwebClient";
+import { sepolia } from "thirdweb/chains";
 import { api } from "@/convex/_generated/api";
 import ProductCard9 from "../card/ProductCard9";
 import Dropdown2 from "../dropdown/Dropdown2";
@@ -33,10 +35,6 @@ export default function CreateNFT(): JSX.Element {
   const account = useActiveAccount();
   const connectionStatus = useActiveWalletConnectionStatus();
   
-  // Initialize the contract
-  const { contract } = useContract(process.env.NEXT_PUBLIC_COLLECTION_SMART_CONTRACT_ADDRESS);
-  const { mutate: mintNft, isLoading: isMinting } = useMintNFT(contract);
-
   const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
   const walletConnected = connectionStatus === "connected" && !!account;
 
@@ -114,7 +112,6 @@ export default function CreateNFT(): JSX.Element {
 
     try {
       // In a real implementation, you would upload to IPFS here
-      // For demo purposes, we'll simulate the upload
       setMintStatus("Uploading metadata...");
       
       // Simulate upload delay
@@ -124,37 +121,35 @@ export default function CreateNFT(): JSX.Element {
       const imageUrl = URL.createObjectURL(getImage);
       
       setMintStatus("Minting NFT...");
+
+      const contract = getContract({
+        client: client,
+        chain: sepolia,
+        address: process.env.NEXT_PUBLIC_COLLECTION_SMART_CONTRACT_ADDRESS!,
+      });
       
-      // Mint the NFT
-      mintNft(
-        {
-          metadata: {
-            name: title,
-            description: description,
-            image: imageUrl, // In production, use IPFS URL
-            properties: {
-              collection: selectedCollection?.name || "Uncategorized"
-            }
-          },
-          to: account.address,
-        },
-        {
-          onSuccess: () => {
-            setMintStatus("NFT minted successfully!");
-            setCreating(false);
-            // Reset form
-            setImage(null);
-            setTitle("");
-            setDescription("");
-            setSelectedCollection(null);
-          },
-          onError: (error: any) => {
-            setMintError(`Minting failed: ${error.message}`);
-            setCreating(false);
-            setMintStatus("");
-          },
-        }
-      );
+      // Prepare the contract call using the new ThirdWeb SDK
+      const transaction = prepareContractCall({
+        contract: contract,
+        method: "function mintTo(address to, string memory uri) public",
+        params: [account.address, imageUrl] // In production, use IPFS URL
+      });
+      
+      // Send the transaction
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account: account
+      });
+      
+      setMintStatus(`NFT minted successfully! Transaction hash: ${transactionHash}`);
+      setCreating(false);
+      
+      // Reset form
+      setImage(null);
+      setTitle("");
+      setDescription("");
+      setSelectedCollection(null);
+      
     } catch (error: any) {
       setMintError(`Error: ${error.message}`);
       setCreating(false);
@@ -266,9 +261,9 @@ export default function CreateNFT(): JSX.Element {
                         type="button"
                         className="sc-button loadmore style fl-button pri-3 mt-4"
                         onClick={handleCreateNFT}
-                        disabled={creating || isMinting}
+                        disabled={creating}
                       >
-                        {creating || isMinting ? "Creating NFT..." : "Create NFT"}
+                        {creating ? "Creating NFT..." : "Create NFT"}
                       </button>
                     </form>
                   </div>
