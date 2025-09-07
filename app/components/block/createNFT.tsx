@@ -185,7 +185,7 @@ export default function CreateNFT(): JSX.Element {
         currency: "0x0000000000000000000000000000000000000000", // Native token
         validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
         validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 3600), // 1 hour validity
-        uid: generateUID() as `0x${string}`, // Generate a unique ID
+        uid: generateUID(), // Generate a unique ID
       };
 
       // Get signature from your backend
@@ -230,10 +230,13 @@ export default function CreateNFT(): JSX.Element {
   };
 
   // Helper function to generate a unique ID
-  const generateUID = () => {
-    return `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
+  const generateUID = (): `0x${string}` => {
+    const randomBytes = new Uint8Array(32);
+    crypto.getRandomValues(randomBytes);
+    const hex = Array.from(randomBytes)
       .map(b => b.toString(16).padStart(2, '0'))
-      .join('')}`;
+      .join('');
+    return `0x${hex}`;
   };
 
   if (!walletConnected) {
