@@ -5,10 +5,14 @@ export default function Dropdown1({
     id,
     defaultSelect = "Dropdown",
     data = ["😍", "🥰", "😘"],
+    style = {},
+    className = "",
 }: {
     id?: string;
     defaultSelect: string;
     data: string[];
+    style?: React.CSSProperties;
+    className?: string;
 }) {
     const [getCurrentSelect, setCurrentSelect] =
         useState<string>(defaultSelect);
@@ -28,8 +32,9 @@ export default function Dropdown1({
         <>
             <div
                 id={id}
-                className="dropdown"
+                className={`dropdown ${className}`}
                 onMouseLeave={dropdownLeaveHandler}
+                style={style}
             >
                 <a
                     onMouseOver={dropdownHoverHandler}

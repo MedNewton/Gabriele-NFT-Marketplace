@@ -7,7 +7,9 @@ export default function ProductCard9({ data }: any): JSX.Element {
         <>
             <div className="sc-card-product">
                 <div className="card-media">
-                    <Link href="/item-details-1">
+                    <Link href="/item-details-1" onClick={(e) => {
+                        e.preventDefault();
+                    }}>
                         <Image
                             height={500}
                             width={500}
@@ -18,25 +20,32 @@ export default function ProductCard9({ data }: any): JSX.Element {
                 </div>
                 <div className="card-title">
                     <h5>
-                        <Link href="/item-details-1">{data.title}</Link>
+                        <Link href="/item-details-1" onClick={(e) => {
+                            e.preventDefault();
+                        }}>{data.title}</Link>
                     </h5>
-                    <div className="tags">{data.tag}</div>
                 </div>
                 <div className="meta-info">
                     <div className="author">
-                        <div className="avatar">
-                            <Image
-                                height={100}
-                                width={100}
-                                src={data.author.avatar}
-                                alt="Image"
-                            />
-                        </div>
                         <div className="info">
-                            <span>Owned By</span>
+                            <span>Description</span>
+                            <p>
+                                <Link href="/item-details-1" onClick={(e) => {
+                                    e.preventDefault();
+                                }}>{data.description.length > 50 ? data.description.substring(0, 50) + " ..." : data.description}</Link>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="meta-info">
+                    <div className="author">
+                        <div className="info">
+                            <span>Collection</span>
                             <h6>
-                                <Link href="/authors-2">
-                                    {data.author.name}
+                                <Link href="/authors-2" onClick={(e) => {
+                                    e.preventDefault();
+                                }}>
+                                    {data.collection.name}
                                 </Link>
                             </h6>
                         </div>

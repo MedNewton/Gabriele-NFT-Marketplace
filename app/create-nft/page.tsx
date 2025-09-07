@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Breadcrumb from "../components/breadcrumb";
-import CreateItem from "../components/block/CreateItem";
+import CreateNFT from "../components/block/createNFT";
 
 const item = {
     title: "Create NFT",
@@ -17,7 +17,7 @@ export default function page(): JSX.Element {
     return (
         <>
             <Breadcrumb data={item} />
-            <CreateItem />
+            <CreateNFT />
         </>
     );
 }

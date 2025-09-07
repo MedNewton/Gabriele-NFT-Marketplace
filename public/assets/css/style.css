@@ -3870,5 +3870,21 @@ a {
     cursor: none;
 }
 
+.dropdown.style-3 .btn-selector.nolink {
+    width: 100% !important;
+    display: block; /* Ensure the link is a block-level element */
+    margin-bottom: 24px;
+    background-color: #fff !important;
+    border: 1px solid rgba(138, 138, 160, 0.3);
+    border-radius: 10px;
+  }
 
+  .dropdown.style-3 ul{
+    margin-top: -24px !important;
+    
+  }
+  
+  .full-width{
+    width: 100% !important;
+  }
 

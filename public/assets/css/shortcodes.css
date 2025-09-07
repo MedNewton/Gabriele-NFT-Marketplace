@@ -3043,6 +3043,11 @@ section.today-picks {
     margin-right: 10px;
 }
 
+.seclect-box #full_item_category {
+    margin-right: 10px;
+    width: 100%;
+}
+
 .seclect-box #sort-by {
     margin-left: 10px;
 }
@@ -3144,16 +3149,28 @@ section.today-picks {
     width: 35%;
 }
 
+.seclect-box.style-3 {
+    width: 100% !important;
+}
+
 .seclect-box #item_category.dropdown > a {
     min-width: 145px;
+    width: 100% !important;
+}
+
+.seclect-box .dropdown.style-3 > a {
+    min-width: 100%;
+    width: 100% !important;
 }
 
 .seclect-box #sort-by.dropdown > a {
     min-width: 100px;
+    width: 100% !important;
 }
 
 .seclect-box #artworks.dropdown > a {
     min-width: 136px;
+    width: 100% !important;
 }
 
 .dropdown ul {
