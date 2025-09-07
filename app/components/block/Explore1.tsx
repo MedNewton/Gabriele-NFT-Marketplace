@@ -40,7 +40,6 @@ function normalizeImageCandidate(input: unknown): string | null {
 
   // Handle common IPFS variants
   if (uri.startsWith("ipfs://")) {
-    // strip ipfs:// and optional leading ipfs/
     const path = uri.replace(/^ipfs:\/\//, "").replace(/^ipfs\//, "");
     return `https://ipfs.io/ipfs/${path}`;
   }
@@ -51,8 +50,63 @@ function normalizeImageCandidate(input: unknown): string | null {
   if (/^blob:/i.test(uri)) return uri;
   if (uri.startsWith("/")) return uri;
 
-  // Some metadata fields are junky (e.g., "i" or "undefined")
   return null;
+}
+
+/** Normalize attributes from various metadata shapes into a simple map */
+function extractAttributes(md: any): Record<string, string> {
+  const out: Record<string, string> = {};
+  const attrs = md?.attributes;
+
+  // Common OpenSea-style: Array<{ trait_type, value }>
+  if (Array.isArray(attrs)) {
+    for (const a of attrs) {
+      if (a && typeof a === "object") {
+        const key =
+          a.trait_type ??
+          a.traitType ??
+          a.trait ??
+          a.type ??
+          undefined;
+        const val =
+          a.value ??
+          a.val ??
+          a.display_value ??
+          a.displayValue ??
+          undefined;
+        if (typeof key === "string" && typeof val !== "undefined") {
+          out[String(key)] = String(val);
+        }
+      } else if (typeof a === "string") {
+        // Rare: array of strings like "Color: Blue"
+        const [k, ...rest] = a.split(":");
+        if (k && rest.length) out[k.trim()] = rest.join(":").trim();
+      }
+    }
+  }
+
+  // Sometimes "attributes" is an object map: { Color: "Blue", Rarity: "Epic" }
+  if (attrs && typeof attrs === "object" && !Array.isArray(attrs)) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        out[k] = String(v);
+      }
+    }
+  }
+
+  // Some metadata use "properties" instead of "attributes"
+  const props = md?.properties;
+  if (props && typeof props === "object") {
+    for (const [k, v] of Object.entries(props)) {
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        out[k] = String(v);
+      } else if (v && typeof v === "object" && "value" in v && (typeof (v as any).value === "string" || typeof (v as any).value === "number")) {
+        out[k] = String((v as any).value);
+      }
+    }
+  }
+
+  return out;
 }
 
 export default function Explore1() {
@@ -76,27 +130,38 @@ export default function Explore1() {
   const mapNftsToCards = useCallback((nfts: any[], startIndex: number): CardItem[] => {
     return nfts.map((nft, i) => {
       const md = (nft?.metadata ?? {}) as Record<string, any>;
+
+      // Extract attributes robustly
+      const attrs = extractAttributes(md);
+      const collectionName =
+        attrs["Collection"] ??
+        attrs["collection"] ??
+        md?.collection ??
+        "Collection";
+
       const img =
         normalizeImageCandidate(md.image) ??
         normalizeImageCandidate(md.image_url) ??
         FALLBACK_IMG;
 
-      const title = typeof md.name === "string" && md.name.trim()
-        ? md.name
-        : `Token #${String(nft?.id ?? "")}`;
+      const title =
+        typeof md.name === "string" && md.name.trim()
+          ? md.name
+          : `Token #${String(nft?.id ?? "")}`;
 
-      const description = typeof md.description === "string" ? md.description : "";
+      const description =
+        typeof md.description === "string" ? md.description : "";
 
       return {
         id: startIndex + i + 1,
         status: "Minted",
         hert: 0,
-        img, // always valid now
+        img,
         title,
         tag: "NFT",
-        eth: undefined, // no on-chain price in ERC-721 metadata
+        eth: 0, // no on-chain price in ERC-721 metadata
         author: {
-          name: md.metadata.attributes[0].value,
+          name: collectionName, // ✅ from attributes (or fallback)
           avatar: FALLBACK_AVATAR,
         },
         tokenId: typeof nft?.id === "bigint" ? nft.id.toString() : String(nft?.id ?? ""),
@@ -110,7 +175,6 @@ export default function Explore1() {
     async (start: number, count: number) => {
       if (!contract) throw new Error("Contract not configured");
       const nfts = await getNFTs({ contract, start, count });
-      console.log(nfts)
       return mapNftsToCards(nfts, start);
     },
     [contract, mapNftsToCards]
