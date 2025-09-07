@@ -8,7 +8,6 @@ import { sepolia } from "thirdweb/chains";
 import { api } from "@/convex/_generated/api";
 import ProductCard9 from "../card/ProductCard9";
 import Dropdown2 from "../dropdown/Dropdown2";
-import { product1 } from "@/data/product";
 
 interface Collection {
   name: string;
@@ -140,6 +139,8 @@ export default function CreateNFT(): JSX.Element {
         transaction,
         account: account
       });
+
+      console.log("Transaction hash:", transactionHash);
       
       setMintStatus(`NFT minted successfully! Transaction hash: ${transactionHash}`);
       setCreating(false);
