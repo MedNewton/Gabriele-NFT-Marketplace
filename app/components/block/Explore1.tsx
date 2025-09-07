@@ -96,7 +96,7 @@ export default function Explore1() {
         tag: "NFT",
         eth: undefined, // no on-chain price in ERC-721 metadata
         author: {
-          name: "Collection",
+          name: md.metadata.attributes[0].value,
           avatar: FALLBACK_AVATAR,
         },
         tokenId: typeof nft?.id === "bigint" ? nft.id.toString() : String(nft?.id ?? ""),
