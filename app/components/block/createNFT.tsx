@@ -4,7 +4,7 @@ import { useQuery, useConvex } from "convex/react";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import { prepareContractCall, sendTransaction, toUnits, getContract } from "thirdweb";
 import client from "@/app/thirdwebClient";
-import { sepolia } from "thirdweb/chains";
+import { sepolia, baseSepolia } from "thirdweb/chains";
 import { api } from "@/convex/_generated/api";
 import ProductCard9 from "../card/ProductCard9";
 import Dropdown2 from "../dropdown/Dropdown2";
@@ -123,7 +123,7 @@ export default function CreateNFT(): JSX.Element {
 
       const contract = getContract({
         client: client,
-        chain: sepolia,
+        chain: baseSepolia,
         address: process.env.NEXT_PUBLIC_COLLECTION_SMART_CONTRACT_ADDRESS!,
       });
       
