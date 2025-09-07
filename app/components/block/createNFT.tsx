@@ -153,6 +153,7 @@ export default function CreateNFT(): JSX.Element {
         ],
       });
       const metadataIpfsUri = metadataUris[0]; // Get the first URI from the array
+      alert(metadataUris);
 
       setMintStatus("Minting NFT...");
 
@@ -166,7 +167,7 @@ export default function CreateNFT(): JSX.Element {
       const transaction = prepareContractCall({
         contract: contract,
         method: "function mintTo(address to, string memory uri) public",
-        params: [account.address, metadataIpfsUri] // Use metadata URI instead of image URI
+        params: [account.address, metadataUris.toString()] // Use metadata URI instead of image URI
       });
       
       // Send the transaction
