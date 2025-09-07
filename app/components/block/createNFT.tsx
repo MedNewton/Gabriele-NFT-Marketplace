@@ -2,9 +2,10 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useQuery, useConvex } from "convex/react";
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
-import { prepareContractCall, sendTransaction, toUnits, getContract } from "thirdweb";
+import { prepareContractCall, sendTransaction, getContract } from "thirdweb";
+import { upload } from "thirdweb/storage";
 import client from "@/app/thirdwebClient";
-import { sepolia, baseSepolia } from "thirdweb/chains";
+import { baseSepolia } from "thirdweb/chains";
 import { api } from "@/convex/_generated/api";
 import ProductCard9 from "../card/ProductCard9";
 import Dropdown2 from "../dropdown/Dropdown2";
@@ -106,19 +107,45 @@ export default function CreateNFT(): JSX.Element {
     }
 
     setCreating(true);
-    setMintStatus("Uploading image...");
+    setMintStatus("Uploading image to IPFS...");
     setMintError("");
 
     try {
-      // In a real implementation, you would upload to IPFS here
-      setMintStatus("Uploading metadata...");
+      // Upload image to IPFS
+      const imageIpfsUri = await upload({
+        client,
+        files: [getImage],
+      });
+
+      // Create metadata JSON
+      const metadata = {
+        name: title,
+        description: description,
+        image: imageIpfsUri,
+        attributes: [
+          {
+            trait_type: "Collection",
+            value: selectedCollection?.name || "Uncategorized"
+          },
+          {
+            trait_type: "Creator",
+            value: account.address
+          }
+        ],
+        properties: {
+          created: new Date().toISOString(),
+          creator: account.address
+        }
+      };
+
+      setMintStatus("Uploading metadata to IPFS...");
       
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // This is where you would get the actual IPFS URL
-      const imageUrl = URL.createObjectURL(getImage);
-      
+      // Upload metadata to IPFS
+      const metadataIpfsUri = await upload({
+        client,
+        files: [metadata],
+      });
+
       setMintStatus("Minting NFT...");
 
       const contract = getContract({
@@ -131,7 +158,7 @@ export default function CreateNFT(): JSX.Element {
       const transaction = prepareContractCall({
         contract: contract,
         method: "function mintTo(address to, string memory uri) public",
-        params: [account.address, imageUrl] // In production, use IPFS URL
+        params: [account.address, metadataIpfsUri]
       });
       
       // Send the transaction
