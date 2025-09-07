@@ -38,7 +38,6 @@ export default function CreateNFT(): JSX.Element {
   const [description, setDescription] = useState<string>("");
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
-  // success details
   const [txHash, setTxHash] = useState<string | null>(null);
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
 
@@ -111,11 +110,9 @@ export default function CreateNFT(): JSX.Element {
     setMintedTokenId(null);
 
     try {
-      // 1) Upload image
       const imageUris = await upload({ client, files: [getImage] });
       const imageIpfsUri = imageUris[0];
 
-      // 2) Build metadata
       const metadata = {
         name: title,
         description: description,
@@ -129,13 +126,11 @@ export default function CreateNFT(): JSX.Element {
 
       setMintStatus("Uploading metadata to IPFS...");
 
-      // 3) Upload metadata JSON
       const metadataUri = await upload({
         client,
         files: [new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" })],
       });
 
-      // 4) Call server API to mint
       setMintStatus("Minting NFT on-chain…");
       const res = await fetch("/api/mint", {
         method: "POST",
@@ -163,7 +158,6 @@ export default function CreateNFT(): JSX.Element {
 
       setCreating(false);
 
-      // Reset form (keep success details visible)
       setImage(null);
       setTitle("");
       setDescription("");
