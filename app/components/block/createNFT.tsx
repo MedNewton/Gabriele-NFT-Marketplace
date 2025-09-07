@@ -1,189 +1,337 @@
 "use client";
 import { useState, ChangeEvent, useEffect } from "react";
 import { useQuery, useConvex } from "convex/react";
+import { useContract, useMintNFT } from "@thirdweb-dev/react";
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import { api } from "@/convex/_generated/api";
 import ProductCard9 from "../card/ProductCard9";
 import Dropdown2 from "../dropdown/Dropdown2";
 import { product1 } from "@/data/product";
-import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 
 interface Collection {
-    name: string;
-    imageId: string;
-    _id: string;
-    imageUrl?: string;
+  name: string;
+  imageId: string;
+  _id: string;
+  imageUrl?: string;
 }
 
 export default function CreateNFT(): JSX.Element {
-    const [getImage, setImage] = useState<null | File>(null);
-    const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [imageUrls, setImageUrls] = useState<{ [key: string]: string }>({});
-    const [creating, setCreating] = useState<boolean>(false);
+  const [getImage, setImage] = useState<null | File>(null);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string }>({});
+  const [creating, setCreating] = useState<boolean>(false);
+  const [mintStatus, setMintStatus] = useState<string>("");
+  const [mintError, setMintError] = useState<string>("");
 
-    // Add state for the preview
-    const [title, setTitle] = useState<string>("");
-    const [description, setDescription] = useState<string>("");
-    const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  // Form state
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
-    const convex = useConvex(); // Get the Convex client
+  const convex = useConvex();
+  const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
+  
+  // Initialize the contract
+  const { contract } = useContract(process.env.NEXT_PUBLIC_COLLECTION_SMART_CONTRACT_ADDRESS);
+  const { mutate: mintNft, isLoading: isMinting } = useMintNFT(contract);
 
-    const account = useActiveAccount();
-    const connectionStatus = useActiveWalletConnectionStatus();
-    const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
-    const walletConnected = connectionStatus === "connected" && !!account;
+  const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
+  const walletConnected = connectionStatus === "connected" && !!account;
 
-    const myCollections = useQuery(api.collections.getByCreator, { creator: account?.address ?? "" });
+  const myCollections = useQuery(api.collections.getByCreator, { 
+    creator: account?.address ?? "" 
+  });
 
-    useEffect(() => {
-        if (myCollections) {
-            setCollections(myCollections);
+  useEffect(() => {
+    if (myCollections) {
+      setCollections(myCollections);
 
-            // Fetch image URLs for each collection
-            const fetchImageUrls = async () => {
-                const urls: { [key: string]: string } = {};
-                for (const collection of myCollections) {
-                    try {
-                        const url = await convex.query(api.collections.getUrl, {
-                            imageId: collection.imageId,
-                        });
-                        urls[collection._id] = url || "/assets/images/box-item/card-item8.jpg";
-                    } catch (error) {
-                        console.error("Failed to fetch image URL:", error);
-                        urls[collection._id] = "/default-image.jpg";
-                    }
-                }
-                setImageUrls(urls);
-            };
-
-            fetchImageUrls();
+      // Fetch image URLs for each collection
+      const fetchImageUrls = async () => {
+        const urls: { [key: string]: string } = {};
+        for (const collection of myCollections) {
+          try {
+            const url = await convex.query(api.collections.getUrl, {
+              imageId: collection.imageId,
+            });
+            urls[collection._id] = url || "/assets/images/box-item/card-item8.jpg";
+          } catch (error) {
+            console.error("Failed to fetch image URL:", error);
+            urls[collection._id] = "/default-image.jpg";
+          }
         }
-    }, [myCollections, convex]);
+        setImageUrls(urls);
+      };
 
-    const uploadHandler = (e: ChangeEvent<HTMLInputElement>): void => {
-        const file: File | null = e.target.files?.[0] || null;
-        setImage(file);
-    };
+      fetchImageUrls();
+    }
+  }, [myCollections, convex]);
 
-    const handleCollectionChange = (selectedValue: string) => {
-        const selectedCollection = collections.find(
-            (collection) => collection.name === selectedValue
-        );
-        if (selectedCollection) {
-            setSelectedCollection(selectedCollection); // Set the selected collection object
-            setSelectedCollectionId(selectedCollection._id); // Set the selected collection's _id
-        }
-    };
+  const uploadHandler = (e: ChangeEvent<HTMLInputElement>): void => {
+    const file: File | null = e.target.files?.[0] || null;
+    setImage(file);
+  };
 
-    const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setTitle(e.target.value);
-    };
+  const handleCollectionChange = (selectedValue: string) => {
+    const selected = collections.find(
+      (collection) => collection.name === selectedValue
+    );
+    if (selected) {
+      setSelectedCollection(selected);
+      setSelectedCollectionId(selected._id);
+    }
+  };
 
-    const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        setDescription(e.target.value);
-    };
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
 
-    if (!walletConnected) {
-        return (
-            <div className="tf-connect-wallet tf-section">
-                <div className="ibthemes-container">
-                    <div className="row">
-                        <div className="col-12">
-                            <h2 className="tf-title-heading ct style-2 mg-bt-12">Connect Your Wallet</h2>
-                            <h5 className="sub-title ct style-1 pad-400">
-                                To create a collection, you need to connect your wallet.
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+  const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  };
+
+  const handleCreateNFT = async () => {
+    if (!getImage) {
+      setMintError("Please upload an image");
+      return;
+    }
+    
+    if (!title || !description) {
+      setMintError("Please fill in all required fields");
+      return;
+    }
+    
+    if (!account?.address) {
+      setMintError("Wallet not connected");
+      return;
     }
 
+    setCreating(true);
+    setMintStatus("Uploading image...");
+    setMintError("");
+
+    try {
+      // In a real implementation, you would upload to IPFS here
+      // For demo purposes, we'll simulate the upload
+      setMintStatus("Uploading metadata...");
+      
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // This is where you would get the actual IPFS URL
+      const imageUrl = URL.createObjectURL(getImage);
+      
+      setMintStatus("Minting NFT...");
+      
+      // Mint the NFT
+      mintNft(
+        {
+          metadata: {
+            name: title,
+            description: description,
+            image: imageUrl, // In production, use IPFS URL
+            properties: {
+              collection: selectedCollection?.name || "Uncategorized"
+            }
+          },
+          to: account.address,
+        },
+        {
+          onSuccess: () => {
+            setMintStatus("NFT minted successfully!");
+            setCreating(false);
+            // Reset form
+            setImage(null);
+            setTitle("");
+            setDescription("");
+            setSelectedCollection(null);
+          },
+          onError: (error: any) => {
+            setMintError(`Minting failed: ${error.message}`);
+            setCreating(false);
+            setMintStatus("");
+          },
+        }
+      );
+    } catch (error: any) {
+      setMintError(`Error: ${error.message}`);
+      setCreating(false);
+      setMintStatus("");
+    }
+  };
+
+  if (!walletConnected) {
     return (
-        <>
-            <div className="tf-create-item tf-section">
-                <div className="ibthemes-container">
-                    <div className="row">
-                        <div className="col-xl-3 col-lg-6 col-md-6 col-12">
-                            <h4 className="title-create-item">Preview NFT</h4>
-                            <ProductCard9
-                                data={{
-                                    img: getImage ? URL.createObjectURL(getImage) : "/assets/images/box-item/card-item8.jpg", // Preview uploaded image
-                                    title: title || "NFT Title",
-                                    description: description.length > 50 ? description.substring(0, 50) + " ..." : description || "NFT Description",
-                                    collection: selectedCollection || { name: "Select a collection" },
-                                }}
-                            />
-                        </div>
-                        <div className="col-xl-9 col-lg-6 col-md-12 col-12">
-                            <div className="form-create-item">
-                                <form action="#">
-                                    <h4 className="title-create-item">Upload file</h4>
-                                    <label className="uploadFile">
-                                        <span className="filename">
-                                            {getImage !== null
-                                                ? getImage?.name
-                                                : `PNG, JPG, GIF, WEBP or MP4. Max 200mb.`}
-                                        </span>
-                                        <input
-                                            type="file"
-                                            className="inputfile form-control"
-                                            name="file"
-                                            onChange={uploadHandler}
-                                        />
-                                    </label>
-                                </form>
-                                <div className="flat-tabs tab-create-item">
-                                    <div className="content-tab">
-                                        <div className="content-inner">
-                                            <form action="#">
-                                                <h4 className="title-create-item">Collection</h4>
-                                                <Dropdown2
-                                                    id="full_item_category"
-                                                    defaultSelect="Select a collection"
-                                                    style={{
-                                                        width: "100% !important",
-                                                    }}
-                                                    className="style-3"
-                                                    data={collections.map(collection => ({
-                                                        ...collection,
-                                                        imageUrl: imageUrls[collection._id],
-                                                    }))}
-                                                    onChange={handleCollectionChange}
-                                                />
-                                                <h4 className="title-create-item">Title</h4>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter NFT name"
-                                                    value={title}
-                                                    onChange={handleTitleChange}
-                                                />
-                                                <h4 className="title-create-item">Description</h4>
-                                                <textarea
-                                                    placeholder="e.g. “This is very limited item”"
-                                                    value={description}
-                                                    rows={6}
-                                                    onChange={handleDescriptionChange}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="sc-button loadmore style fl-button pri-3 mt-4"
-                                                    onClick={() => setCreating(true)}
-                                                    disabled={creating}
-                                                    aria-busy={creating}
-                                                >
-                                                    {creating ? "Creating NFT..." : "Create NFT"}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div className="tf-connect-wallet tf-section">
+        <div className="ibthemes-container">
+          <div className="row">
+            <div className="col-12">
+              <h2 className="tf-title-heading ct style-2 mg-bt-12">
+                Connect Your Wallet
+              </h2>
+              <h5 className="sub-title ct style-1 pad-400">
+                To create an NFT, you need to connect your wallet.
+              </h5>
             </div>
-        </>
+          </div>
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="tf-create-item tf-section">
+      <div className="ibthemes-container">
+        <div className="row">
+          <div className="col-xl-3 col-lg-6 col-md-6 col-12">
+            <h4 className="title-create-item">Preview NFT</h4>
+            <ProductCard9
+              data={{
+                img: getImage ? URL.createObjectURL(getImage) : "/assets/images/box-item/card-item8.jpg",
+                title: title || "NFT Title",
+                description: description.length > 50 
+                  ? description.substring(0, 50) + " ..." 
+                  : description || "NFT Description",
+                collection: selectedCollection || { name: "Select a collection" },
+              }}
+            />
+          </div>
+          <div className="col-xl-9 col-lg-6 col-md-12 col-12">
+            <div className="form-create-item">
+              <form>
+                <h4 className="title-create-item">Upload file</h4>
+                <label className="uploadFile">
+                  <span className="filename">
+                    {getImage !== null
+                      ? getImage?.name
+                      : `PNG, JPG, GIF, WEBP or MP4. Max 200mb.`}
+                  </span>
+                  <input
+                    type="file"
+                    className="inputfile form-control"
+                    name="file"
+                    onChange={uploadHandler}
+                    disabled={creating}
+                  />
+                </label>
+              </form>
+              <div className="flat-tabs tab-create-item">
+                <div className="content-tab">
+                  <div className="content-inner">
+                    <form>
+                      <h4 className="title-create-item">Collection</h4>
+                      <Dropdown2
+                        id="full_item_category"
+                        defaultSelect="Select a collection"
+                        style={{ width: "100% !important" }}
+                        className="style-3"
+                        data={collections.map(collection => ({
+                          ...collection,
+                          imageUrl: imageUrls[collection._id],
+                        }))}
+                        onChange={handleCollectionChange}
+                      />
+                      <h4 className="title-create-item">Title</h4>
+                      <input
+                        type="text"
+                        placeholder="Enter NFT name"
+                        value={title}
+                        onChange={handleTitleChange}
+                        disabled={creating}
+                      />
+                      <h4 className="title-create-item">Description</h4>
+                      <textarea
+                        placeholder="e.g. “This is very limited item”"
+                        value={description}
+                        rows={6}
+                        onChange={handleDescriptionChange}
+                        disabled={creating}
+                      />
+                      
+                      {mintStatus && (
+                        <div className="mint-status">
+                          <p>{mintStatus}</p>
+                        </div>
+                      )}
+                      
+                      {mintError && (
+                        <div className="mint-error">
+                          <p>{mintError}</p>
+                        </div>
+                      )}
+                      
+                      <button
+                        type="button"
+                        className="sc-button loadmore style fl-button pri-3 mt-4"
+                        onClick={handleCreateNFT}
+                        disabled={creating || isMinting}
+                      >
+                        {creating || isMinting ? "Creating NFT..." : "Create NFT"}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <style jsx>{`
+        .mint-status {
+          background-color: #f0f9ff;
+          color: #0369a1;
+          padding: 12px;
+          border-radius: 8px;
+          margin: 16px 0;
+        }
+        
+        .mint-error {
+          background-color: #fef2f2;
+          color: #dc2626;
+          padding: 12px;
+          border-radius: 8px;
+          margin: 16px 0;
+        }
+        
+        .uploadFile {
+          display: block;
+          padding: 24px;
+          border: 2px dashed #ddd;
+          border-radius: 8px;
+          text-align: center;
+          cursor: pointer;
+          transition: border-color 0.3s;
+        }
+        
+        .uploadFile:hover {
+          border-color: #8364e2;
+        }
+        
+        .inputfile {
+          display: none;
+        }
+        
+        .filename {
+          color: #666;
+        }
+        
+        input, textarea {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-bottom: 16px;
+          font-size: 16px;
+        }
+        
+        button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      `}</style>
+    </div>
+  );
 }
