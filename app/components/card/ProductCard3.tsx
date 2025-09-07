@@ -50,14 +50,7 @@ export default function ProductCard3({ data }: Props): JSX.Element {
                 </div>
                 <div className="meta-info">
                     <div className="author">
-                        <div className="avatar">
-                            <Image
-                                height={100}
-                                width={100}
-                                src={data.author?.avatar || ""}
-                                alt="Image"
-                            />
-                        </div>
+
                         <div className="info">
                             <span>Collection</span>
                             <h6>
