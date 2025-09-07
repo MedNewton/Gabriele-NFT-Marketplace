@@ -138,6 +138,8 @@ export default function CreateNFT(): JSX.Element {
         }
       };
 
+      console.log("Metadata:", metadata);
+
       setMintStatus("Uploading metadata to IPFS...");
       
       // Upload metadata to IPFS
@@ -145,6 +147,8 @@ export default function CreateNFT(): JSX.Element {
         client,
         files: [metadata],
       });
+
+      console.log("Metadata IPFS URI:", metadataIpfsUri);
 
       setMintStatus("Minting NFT...");
 
