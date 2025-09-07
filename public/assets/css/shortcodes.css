@@ -3150,27 +3150,24 @@ section.today-picks {
 }
 
 .seclect-box.style-3 {
-    width: 100% !important;
+    width: 100%;
 }
 
 .seclect-box #item_category.dropdown > a {
     min-width: 145px;
-    width: 100% !important;
 }
 
-.seclect-box .dropdown.style-3 > a {
+.seclect-box #full_item_category.dropdown.style-3 > a {
     min-width: 100%;
     width: 100% !important;
 }
 
 .seclect-box #sort-by.dropdown > a {
     min-width: 100px;
-    width: 100% !important;
 }
 
 .seclect-box #artworks.dropdown > a {
     min-width: 136px;
-    width: 100% !important;
 }
 
 .dropdown ul {

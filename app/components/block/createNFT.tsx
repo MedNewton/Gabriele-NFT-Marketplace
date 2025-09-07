@@ -111,7 +111,7 @@ export default function CreateNFT(): JSX.Element {
                                 data={{
                                     img: getImage ? URL.createObjectURL(getImage) : "/assets/images/box-item/card-item8.jpg", // Preview uploaded image
                                     title: title || "NFT Title",
-                                    description: description || "NFT Description",
+                                    description: description.length > 50 ? description.substring(0, 50) + " ..." : description || "NFT Description",
                                     collection: selectedCollection || { name: "Select a collection" },
                                 }}
                             />

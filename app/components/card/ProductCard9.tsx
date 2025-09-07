@@ -32,7 +32,7 @@ export default function ProductCard9({ data }: any): JSX.Element {
                             <p>
                                 <Link href="/item-details-1" onClick={(e) => {
                                     e.preventDefault();
-                                }}>{data.description.length > 50 ? data.description.substring(0, 50) + " ..." : data.description}</Link>
+                                }}>{data.description}</Link>
                             </p>
                         </div>
                     </div>
