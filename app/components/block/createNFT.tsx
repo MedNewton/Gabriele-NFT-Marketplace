@@ -23,6 +23,8 @@ type MintApiResponse = {
   error?: string;
 };
 
+const BASE_SEPOLIA_EXPLORER = "https://sepolia.basescan.org";
+
 export default function CreateNFT(): JSX.Element {
   const [getImage, setImage] = useState<null | File>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
@@ -36,14 +38,18 @@ export default function CreateNFT(): JSX.Element {
   const [description, setDescription] = useState<string>("");
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
+  // success details
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
+
   const convex = useConvex();
   const account = useActiveAccount();
   const connectionStatus = useActiveWalletConnectionStatus();
   const walletLoading = connectionStatus === "unknown" || connectionStatus === "connecting";
   const walletConnected = connectionStatus === "connected" && !!account;
 
-  const myCollections = useQuery(api.collections.getByCreator, { 
-    creator: account?.address ?? "" 
+  const myCollections = useQuery(api.collections.getByCreator, {
+    creator: account?.address ?? ""
   });
 
   useEffect(() => {
@@ -101,11 +107,15 @@ export default function CreateNFT(): JSX.Element {
     setCreating(true);
     setMintStatus("Uploading image to IPFS...");
     setMintError("");
+    setTxHash(null);
+    setMintedTokenId(null);
 
     try {
+      // 1) Upload image
       const imageUris = await upload({ client, files: [getImage] });
       const imageIpfsUri = imageUris[0];
 
+      // 2) Build metadata
       const metadata = {
         name: title,
         description: description,
@@ -119,18 +129,20 @@ export default function CreateNFT(): JSX.Element {
 
       setMintStatus("Uploading metadata to IPFS...");
 
-      const metadataUris = await upload({
+      // 3) Upload metadata JSON
+      const metadataUri = await upload({
         client,
         files: [new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" })],
       });
 
+      // 4) Call server API to mint
       setMintStatus("Minting NFT on-chain…");
       const res = await fetch("/api/mint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientAddress: account.address, tokenURI: metadataUris }),
+        body: JSON.stringify({ recipientAddress: account.address, tokenURI: metadataUri }),
       });
-      
+
       const raw = await res.text();
       let data: MintApiResponse;
       try {
@@ -138,23 +150,26 @@ export default function CreateNFT(): JSX.Element {
       } catch {
         throw new Error(`Non-JSON response from server: ${raw.slice(0, 200)}`);
       }
-      
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Minting failed");
       }
 
       setMintStatus(
-        `NFT minted successfully! Token ID: ${data.tokenId ?? "?"} — Tx: ${data.transactionHash}`
+        `NFT minted successfully! Token ID: ${data.tokenId ?? "?"}`
       );
+      if (data.transactionHash) setTxHash(data.transactionHash);
+      if (data.tokenId) setMintedTokenId(data.tokenId);
+
       setCreating(false);
 
+      // Reset form (keep success details visible)
       setImage(null);
       setTitle("");
       setDescription("");
       setSelectedCollection(null);
     } catch (error: any) {
       setMintError(`Error: ${error.message ?? String(error)}`);
-      alert(error.message ?? String(error));
       console.error("Error:", error);
       setCreating(false);
       setMintStatus("");
@@ -244,6 +259,25 @@ export default function CreateNFT(): JSX.Element {
                       {mintStatus && (
                         <div className="mint-status">
                           <p>{mintStatus}</p>
+
+                          {/* Explorer link after success */}
+                          {txHash && (
+                            <p className="mt-2">
+                              <a
+                                href={`${BASE_SEPOLIA_EXPLORER}/tx/${txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="explorer-link"
+                              >
+                                View on Base SepoliaScan ↗
+                              </a>
+                            </p>
+                          )}
+
+                          {/* Optional: show tokenId too */}
+                          {mintedTokenId && (
+                            <p className="tokenid-line">Token ID: {mintedTokenId}</p>
+                          )}
                         </div>
                       )}
 
@@ -285,6 +319,9 @@ export default function CreateNFT(): JSX.Element {
           border-radius: 8px;
           margin: 16px 0;
         }
+        .explorer-link {
+          text-decoration: underline;
+        }
         .uploadFile {
           display: block;
           padding: 24px;
@@ -306,6 +343,7 @@ export default function CreateNFT(): JSX.Element {
           font-size: 16px;
         }
         button:disabled { opacity: 0.7; cursor: not-allowed; }
+        .tokenid-line { margin-top: 6px; }
       `}</style>
     </div>
   );
