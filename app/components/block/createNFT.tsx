@@ -140,8 +140,8 @@ export default function CreateNFT(): JSX.Element {
                                             <form action="#">
                                                 <h4 className="title-create-item">Collection</h4>
                                                 <Dropdown2
-                                                    id="#full_item_category"
-                                                    defaultSelect="All categories"
+                                                    id="full_item_category"
+                                                    defaultSelect="Select a collection"
                                                     style={{
                                                         width: "100% !important",
                                                     }}

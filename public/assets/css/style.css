@@ -3974,7 +3974,7 @@ a {
     background-color: #fff !important;
     border: 1px solid rgba(138, 138, 160, 0.3) !important;
     border-radius: 10px !important;
-    text-align: center;
+    text-align: left !important;
     padding: 10px;
     box-sizing: border-box;
 }
